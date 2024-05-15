@@ -1,0 +1,75 @@
+Part A:
+You should write a C or C++ program that launches a variable number of threads.
+Each thread should be assigned ONE of the following jobs:
+Job one should print out "I am a producer," along with its TID.
+Job two should print out "I am a consumer," along with its TID.
+You should have an equal number of producers and consumers, which means you will always launch an even number of threads.
+You should compile your program with the following line:
+[bash]$ gcc CS415-Thrd.c -lpthread
+
+Working flow
+1. Get number of threads from user input 
+2. Check the number is even
+3. Create half threads as Producer then create rest as Consumer
+create thread
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *),      void *arg);
+                    ptr to TID         thread attribute option     ptr to function executes in thread   param for function
+wait until all thread are done
+int pthread_join(pthread_t thread,           void **retval);
+                    TID waiting to finish     ptr to return value from function (NULL -> ignore)
+                    
+Part B:
+The threads assigned to be a producer should first **add 1** to a global, shared variable A.
+Then they should **add 3** to a second global, shared variable B.
+The threads assigned a consumer, should first add 3 to the global variable B, and then add one to the global variable A.
+Each thread must sleep a random amount of time (from 0 micro-seconds to a 100 micro-seconds) after each addition (do a man on **usleep**).
+They should do the addition **100 times** each.
+
+You will need to use two semaphores, 
+one to protect "A" from getting modified by two threads at the same time, 
+and another to protect "B" from getting modified by two threads at the same time. 
+You also need to write your code so that A and B can be modified at the same time **by two different threads.** 
+In other words, one thread should **never have access** to modify A and B **at the same time.**
+
+Working flow
+Producer
+1. simulate decrementing &mutexA value with sem_wait()
+2. if &mutexA will become 0 the thread can executes the program
+   if &mutexA has been already 0 the thread will be blocked
+3. do addition for A
+4. add 1 to &mutexA with sem_post(), release the resource
+5. sleep for 0-100 microseconds
+6. do 1-5 for B
+7. repeat more 99 times
+
+Consumer
+do same thing but starts from adding B
+impove efficiency
+
+After all threads done their task
+show result
+
+
+Part C:
+After the threads have completed part B, the threads assigned to be producers should "produce" a random number into a buffer. 
+The threads assigned to be consumers should "consume" the number. 
+Both threads should print the number they produce or consume along with their TID. (This will help in debugging). 
+Each thread should produce/consume **20 numbers.** 
+The buffer for the queue should only be able to hold **three** items at a time.
+
+Working flow
+Producer
+1. make a random number (0-99)
+2. check how many empty slot into a buffer
+   if there has been already no slot the thread is blocked
+3. check the buffer is free
+   if no the thread is blocked
+4. store the random number into buffer (0->1->2->0->...)
+5. print out the work
+6. add 1 to &mutex with sem_post(), release the resource
+7. add 1 to &full with sem_post()
+8. sleep for 0-100 microseconds
+9. repeat more 19 times
+
+Consumer
+vice varsa
